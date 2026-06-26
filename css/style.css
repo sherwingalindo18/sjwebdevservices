@@ -175,8 +175,8 @@ p { color: var(--muted); }
   height: 66px;
 }
 .nav__inner { width: 100%; max-width: var(--container); margin-inline: auto; padding-inline: var(--gutter); display: flex; align-items: center; justify-content: space-between; gap: 1.5rem; }
-.nav__logo img { height: 38px; width: auto; transition: height .3s var(--ease); }
-.nav.is-scrolled .nav__logo img { height: 34px; }
+.nav__logo img { height: 46px; width: auto; transition: height .3s var(--ease); }
+.nav.is-scrolled .nav__logo img { height: 40px; }
 .nav__logo .logo-dark { display: block; }
 .nav__logo .logo-light { display: none; }
 
