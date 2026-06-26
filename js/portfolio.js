@@ -1,6 +1,6 @@
 /* ============================================================
    SJ WEBDEV SERVICES — portfolio.js
-   Category filtering + lightbox preview
+   Category filtering + open each project's live business website
    ============================================================ */
 (function () {
   "use strict";
@@ -41,51 +41,37 @@
     });
   });
 
-  /* ---------- Lightbox ---------- */
-  var lb       = $(".lightbox");
-  if (!lb) return;
-  var lbImg    = $(".lightbox__media img", lb);
-  var lbTitle  = $(".lightbox__title", lb);
-  var lbCat    = $(".lightbox__cat", lb);
-  var lbDesc   = $(".lightbox__desc", lb);
-  var lbType   = $(".lightbox__type", lb);
-  var lbStack  = $(".lightbox__stack", lb);
-  var lbLink   = $(".lightbox__link", lb);
-  var lbClose  = $(".lightbox__close", lb);
-  var lastFocus = null;
+  /* ---------- Open the live business website ---------- */
+  // Clicking a project's image (or the icon button on it) opens that
+  // business's actual website in a new tab — no image lightbox.
+  var EXTERNAL_ICON =
+    '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' +
+    '<path d="M14 4h6v6"/><path d="M20 4 11 13"/>' +
+    '<path d="M19 14v5a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V6a1 1 0 0 1 1-1h5"/></svg>';
 
-  function openLightbox(card) {
-    var img  = $(".p-card__media img", card);
-    lastFocus = document.activeElement;
-    lbImg.src = img ? img.getAttribute("src") : "";
-    lbImg.alt = img ? img.getAttribute("alt") : "";
-    lbTitle.textContent = card.getAttribute("data-title") || "";
-    lbCat.textContent   = "/" + (card.getAttribute("data-cat-label") || card.getAttribute("data-category") || "");
-    lbDesc.textContent  = card.getAttribute("data-desc") || "";
-    lbType.textContent  = card.getAttribute("data-type") || "Website";
-    lbStack.textContent = card.getAttribute("data-stack") || "HTML · CSS · JavaScript";
-    var url = card.getAttribute("data-url") || "#";
-    lbLink.setAttribute("href", url);
-    lb.classList.add("is-open");
-    document.body.style.overflow = "hidden";
-    lbClose.focus();
-  }
-  function closeLightbox() {
-    lb.classList.remove("is-open");
-    document.body.style.overflow = "";
-    if (lastFocus) lastFocus.focus();
+  function visit(url) {
+    if (!url || url === "#") return;
+    window.open(url, "_blank", "noopener");
   }
 
   cards.forEach(function (card) {
-    var trigger = $(".p-card__zoom", card);
+    var url     = card.getAttribute("data-url") || "#";
+    var title   = card.getAttribute("data-title") || "this project";
     var media   = $(".p-card__media", card);
-    function handle(e) { e.preventDefault(); openLightbox(card); }
-    if (trigger) trigger.addEventListener("click", handle);
-    if (media)   media.addEventListener("click", handle);
-  });
+    var trigger = $(".p-card__zoom", card);
 
-  lbClose.addEventListener("click", closeLightbox);
-  lb.addEventListener("click", function (e) { if (e.target === lb) closeLightbox(); });
-  document.addEventListener("keydown", function (e) { if (e.key === "Escape" && lb.classList.contains("is-open")) closeLightbox(); });
+    function handle(e) { e.preventDefault(); visit(url); }
+
+    if (media) {
+      media.addEventListener("click", handle);
+      media.style.cursor = "pointer";
+    }
+    if (trigger) {
+      // Repurpose the on-image button: signal "opens website" and label it.
+      trigger.innerHTML = EXTERNAL_ICON;
+      trigger.setAttribute("aria-label", "Visit " + title + " website");
+      trigger.addEventListener("click", function (e) { e.stopPropagation(); handle(e); });
+    }
+  });
 
 })();
