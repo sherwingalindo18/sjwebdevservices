@@ -1,0 +1,20 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 500" width="800" height="500" role="img" aria-label="SherHisWords — Custom project">
+<defs>
+<linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+<stop offset="0" stop-color="#0E1014"></stop><stop offset="1" stop-color="#171a2e"></stop>
+</linearGradient>
+<pattern id="grid" width="40" height="40" patternUnits="userSpaceOnUse">
+<path d="M40 0H0V40" fill="none" stroke="#ffffff" stroke-opacity="0.03" stroke-width="1"></path>
+</pattern>
+</defs>
+<rect width="800" height="500" fill="url(#bg)"></rect>
+<rect width="800" height="500" fill="url(#grid)"></rect>
+<g opacity="0.9">
+<path d="M520 -40 L300 540" stroke="#2B56F0" stroke-width="46" stroke-linecap="butt" opacity="0.16"></path>
+<path d="M600 -40 L380 540" stroke="#2B56F0" stroke-width="10" opacity="0.5"></path>
+</g>
+<text x="56" y="120" font-family="&#39;JetBrains Mono&#39;,&#39;Courier New&#39;,monospace" font-size="15" letter-spacing="3" fill="#2B56F0">/custom</text>
+<text x="52" y="300" font-family="&#39;Space Grotesk&#39;,&#39;Arial&#39;,sans-serif" font-weight="700" font-size="150" fill="#F3F0E9" fill-opacity="0.96">SW</text>
+<text x="56" y="430" font-family="&#39;Space Grotesk&#39;,&#39;Arial&#39;,sans-serif" font-weight="600" font-size="34" fill="#F3F0E9">SherHisWords</text>
+<text x="56" y="462" font-family="&#39;Inter&#39;,&#39;Arial&#39;,sans-serif" font-size="15" fill="#ffffff" fill-opacity="0.45">sjwebdevservices.com</text>
+</svg>
