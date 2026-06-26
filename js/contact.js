@@ -1,22 +1,24 @@
 /* ============================================================
    SJ WEBDEV SERVICES — contact.js
-   Form validation + EmailJS delivery to sjwebdevservices@gmail.com
+   Form validation + Formspree delivery to sjwebdevservices@gmail.com
 
    ┌─────────────────────────────────────────────────────────┐
-   │  EMAILJS SETUP (one-time, ~5 minutes) — see contact.html │
-   │  bottom comment block for full step-by-step instructions │
+   │  FORMSPREE SETUP (one-time, ~3 minutes) — see contact.html │
+   │  bottom comment block for full step-by-step instructions  │
    └─────────────────────────────────────────────────────────┘
-   Fill in the three IDs below after creating your EmailJS account.
+   Paste your Formspree form ID below after creating your form.
    ============================================================ */
 (function () {
   "use strict";
 
   /* -----------------------------------------------------------
-     EMAILJS CREDENTIALS — replace these three values
+     FORMSPREE FORM ID — replace this one value
+     Create a free form at https://formspree.io that delivers to
+     sjwebdevservices@gmail.com, then paste its ID here. The ID is
+     the last part of the form's endpoint:
+        https://formspree.io/f/XXXXXXXX   ->   "XXXXXXXX"
   ----------------------------------------------------------- */
-  var EMAILJS_PUBLIC_KEY  = "YOUR_PUBLIC_KEY";   // EmailJS > Account > General > Public Key
-  var EMAILJS_SERVICE_ID  = "YOUR_SERVICE_ID";   // EmailJS > Email Services
-  var EMAILJS_TEMPLATE_ID = "YOUR_TEMPLATE_ID";  // EmailJS > Email Templates
+  var FORMSPREE_FORM_ID = "YOUR_FORM_ID";
   /* --------------------------------------------------------- */
 
   var form = document.getElementById("contact-form");
@@ -24,12 +26,8 @@
 
   var alertBox = form.querySelector(".form__alert");
   var submitBtn = form.querySelector('button[type="submit"]');
-  var emailReady = EMAILJS_PUBLIC_KEY.indexOf("YOUR_") === -1;
-
-  // initialise EmailJS SDK if present and configured
-  if (emailReady && window.emailjs) {
-    try { emailjs.init({ publicKey: EMAILJS_PUBLIC_KEY }); } catch (e) {}
-  }
+  var formReady = FORMSPREE_FORM_ID.indexOf("YOUR_") === -1 && FORMSPREE_FORM_ID.trim() !== "";
+  var endpoint = "https://formspree.io/f/" + FORMSPREE_FORM_ID;
 
   /* ---------- Validation rules ---------- */
   var rules = {
@@ -83,6 +81,11 @@
   }
   function hideAlert() { if (alertBox) alertBox.className = "form__alert"; }
 
+  function resetButton() {
+    submitBtn.classList.remove("is-loading");
+    submitBtn.removeAttribute("disabled");
+  }
+
   form.addEventListener("submit", function (e) {
     e.preventDefault();
     hideAlert();
@@ -102,39 +105,43 @@
     submitBtn.classList.add("is-loading");
     submitBtn.setAttribute("disabled", "disabled");
 
-    // ---------- EmailJS delivery ----------
-    if (emailReady && window.emailjs) {
-      var params = {
-        from_name:  form.fullname.value,
-        reply_to:   form.email.value,
-        phone:      form.phone.value || "—",
-        company:    form.company.value || "—",
-        service:    form.service.value,
-        budget:     form.budget.value || "Not specified",
-        message:    form.message.value,
-        to_email:   "sjwebdevservices@gmail.com"
-      };
-      emailjs.send(EMAILJS_SERVICE_ID, EMAILJS_TEMPLATE_ID, params)
-        .then(function () {
-          form.reset();
-          showAlert("success", "Thanks! Your message is on its way — we'll reply within one business day.");
+    // ---------- Formspree delivery ----------
+    if (formReady && window.fetch) {
+      var data = new FormData(form);
+      // A readable subject line in the inbox; Formspree uses the "email"
+      // field as the reply-to automatically.
+      data.append("_subject", "New website inquiry from " + (form.fullname.value || "your site"));
+
+      fetch(endpoint, {
+        method: "POST",
+        body: data,
+        headers: { "Accept": "application/json" }
+      })
+        .then(function (res) {
+          if (res.ok) {
+            form.reset();
+            showAlert("success", "Thanks! Your message is on its way — we'll reply within one business day.");
+          } else {
+            return res.json().then(function (d) {
+              var m = (d && d.errors && d.errors.length) ? d.errors[0].message : null;
+              showAlert("error", m || "Something went wrong sending your message. Please email sjwebdevservices@gmail.com directly.");
+            }).catch(function () {
+              showAlert("error", "Something went wrong sending your message. Please email sjwebdevservices@gmail.com directly.");
+            });
+          }
         })
         .catch(function (err) {
-          showAlert("error", "Something went wrong sending your message. Please email sjwebdevservices@gmail.com directly.");
-          if (window.console) console.error("EmailJS error:", err);
+          showAlert("error", "Network error sending your message. Please email sjwebdevservices@gmail.com directly.");
+          if (window.console) console.error("Formspree error:", err);
         })
-        .finally(function () {
-          submitBtn.classList.remove("is-loading");
-          submitBtn.removeAttribute("disabled");
-        });
+        .finally(resetButton);
     } else {
-      // ---------- Fallback (EmailJS not yet configured) ----------
-      // Demo success so the UX is testable; also offers a mailto fallback.
+      // ---------- Fallback (Formspree not yet configured) ----------
+      // Demo success so the UX is testable until the form ID is added.
       window.setTimeout(function () {
-        submitBtn.classList.remove("is-loading");
-        submitBtn.removeAttribute("disabled");
+        resetButton();
         form.reset();
-        showAlert("success", "Form validated successfully. Add your EmailJS keys in js/contact.js to start receiving inquiries by email.");
+        showAlert("success", "Form validated successfully. Add your Formspree form ID in js/contact.js to start receiving inquiries by email.");
       }, 900);
     }
   });

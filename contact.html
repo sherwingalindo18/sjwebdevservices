@@ -250,47 +250,34 @@
   <button class="to-top" aria-label="Back to top"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="m18 15-6-6-6 6"/></svg></button>
 
   <!-- ============================================================
-       EMAILJS SETUP INSTRUCTIONS  (one-time, ~5 minutes)
+       FORMSPREE SETUP INSTRUCTIONS  (one-time, ~3 minutes)
        ------------------------------------------------------------
-       The form is wired to send inquiries to sjwebdevservices@gmail.com
-       through EmailJS, a free service that lets static sites send email
-       without a backend server.
+       The form delivers inquiries to sjwebdevservices@gmail.com through
+       Formspree, a free service that lets static sites receive form
+       submissions by email without a backend server.
 
        STEP 1 — Create a free account
-         Go to https://www.emailjs.com and sign up (free tier is fine).
+         Go to https://formspree.io and sign up using
+         sjwebdevservices@gmail.com (free tier: ~50 submissions/month).
 
-       STEP 2 — Add an email service
-         Dashboard > "Email Services" > "Add New Service" > pick Gmail
-         (or another provider) and connect sjwebdevservices@gmail.com.
-         Copy the SERVICE ID it generates (e.g. service_ab12cde).
+       STEP 2 — Create a new form
+         Dashboard > "+ New form" > name it (e.g. "Website Inquiries")
+         and set the recipient email to sjwebdevservices@gmail.com.
+         Confirm the verification email Formspree sends to that inbox.
 
-       STEP 3 — Create an email template
-         Dashboard > "Email Templates" > "Create New Template".
-         In the template body, use these variables (they match contact.js):
-            From:     {{from_name}}  <{{reply_to}}>
-            Phone:    {{phone}}
-            Company:  {{company}}
-            Service:  {{service}}
-            Budget:   {{budget}}
-            Message:  {{message}}
-         Set the template "To Email" field to: sjwebdevservices@gmail.com
-         Set "Reply To" to: {{reply_to}}
-         Save and copy the TEMPLATE ID (e.g. template_xy98zzz).
+       STEP 3 — Copy the form ID
+         Each form has an endpoint like:
+            https://formspree.io/f/XXXXXXXX
+         Copy just the ID at the end (the "XXXXXXXX" part).
 
-       STEP 4 — Get your Public Key
-         Dashboard > "Account" > "General" > copy the PUBLIC KEY.
+       STEP 4 — Paste the ID into js/contact.js
+         FORMSPREE_FORM_ID = "XXXXXXXX";
 
-       STEP 5 — Paste your three IDs into js/contact.js
-         EMAILJS_PUBLIC_KEY  = "your_public_key";
-         EMAILJS_SERVICE_ID  = "service_ab12cde";
-         EMAILJS_TEMPLATE_ID = "template_xy98zzz";
-
-       That's it. Until the keys are added, the form validates and shows a
-       success message in demo mode (no email is sent). Once the keys are
-       in place, submissions are delivered to your inbox automatically.
+       That's it. Until the ID is added, the form validates and shows a
+       success message in demo mode (no email is sent). Once the ID is in
+       place, submissions are delivered to your inbox automatically and
+       you can reply straight to the sender (their email is the reply-to).
        ============================================================ -->
-  <!-- EmailJS SDK (loads only here, on the contact page) -->
-  <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js" defer></script>
 
   <script src="js/main.js" defer></script>
   <script src="js/contact.js" defer></script>
