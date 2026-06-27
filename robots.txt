@@ -3,4 +3,4 @@ User-agent: *
 Allow: /
 
 # Sitemap location
-Sitemap: https://www.sjwebdevservices.com/sitemap.xml
+Sitemap: https://sjwebdevservices.com/sitemap.xml
