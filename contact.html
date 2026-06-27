@@ -250,33 +250,20 @@
   <button class="to-top" aria-label="Back to top"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="m18 15-6-6-6 6"/></svg></button>
 
   <!-- ============================================================
-       FORMSPREE SETUP INSTRUCTIONS  (one-time, ~3 minutes)
+       CONTACT FORM DELIVERY — FormSubmit (no account, no API key)
        ------------------------------------------------------------
-       The form delivers inquiries to sjwebdevservices@gmail.com through
-       Formspree, a free service that lets static sites receive form
-       submissions by email without a backend server.
+       The form posts to FormSubmit, a free service that emails
+       submissions to sjwebdevservices@gmail.com without a backend.
 
-       STEP 1 — Create a free account
-         Go to https://formspree.io and sign up using
-         sjwebdevservices@gmail.com (free tier: ~50 submissions/month).
+       ONE-TIME ACTIVATION (required before any email is delivered):
+         1. After this is live, submit the contact form once.
+         2. FormSubmit emails sjwebdevservices@gmail.com an activation
+            link — open that email and click "Activate Form".
+         3. From then on, every inquiry is delivered automatically, with
+            the sender's address set as the reply-to.
 
-       STEP 2 — Create a new form
-         Dashboard > "+ New form" > name it (e.g. "Website Inquiries")
-         and set the recipient email to sjwebdevservices@gmail.com.
-         Confirm the verification email Formspree sends to that inbox.
-
-       STEP 3 — Copy the form ID
-         Each form has an endpoint like:
-            https://formspree.io/f/XXXXXXXX
-         Copy just the ID at the end (the "XXXXXXXX" part).
-
-       STEP 4 — Paste the ID into js/contact.js
-         FORMSPREE_FORM_ID = "XXXXXXXX";
-
-       That's it. Until the ID is added, the form validates and shows a
-       success message in demo mode (no email is sent). Once the ID is in
-       place, submissions are delivered to your inbox automatically and
-       you can reply straight to the sender (their email is the reply-to).
+       The destination address is configured at the top of js/contact.js
+       (CONTACT_EMAIL). No keys or signups are needed.
        ============================================================ -->
 
   <script src="js/main.js" defer></script>

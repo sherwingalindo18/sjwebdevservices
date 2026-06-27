@@ -1,24 +1,20 @@
 /* ============================================================
    SJ WEBDEV SERVICES — contact.js
-   Form validation + Formspree delivery to sjwebdevservices@gmail.com
+   Form validation + FormSubmit delivery to sjwebdevservices@gmail.com
 
-   ┌─────────────────────────────────────────────────────────┐
-   │  FORMSPREE SETUP (one-time, ~3 minutes) — see contact.html │
-   │  bottom comment block for full step-by-step instructions  │
-   └─────────────────────────────────────────────────────────┘
-   Paste your Formspree form ID below after creating your form.
+   FormSubmit needs no account and no API key. The FIRST time the form is
+   submitted, FormSubmit emails sjwebdevservices@gmail.com a one-time
+   activation link — click it once and every later inquiry is delivered
+   straight to the inbox.
    ============================================================ */
 (function () {
   "use strict";
 
   /* -----------------------------------------------------------
-     FORMSPREE FORM ID — replace this one value
-     Create a free form at https://formspree.io that delivers to
-     sjwebdevservices@gmail.com, then paste its ID here. The ID is
-     the last part of the form's endpoint:
-        https://formspree.io/f/XXXXXXXX   ->   "XXXXXXXX"
+     Inquiries are emailed to this address via FormSubmit.
   ----------------------------------------------------------- */
-  var FORMSPREE_FORM_ID = "YOUR_FORM_ID";
+  var CONTACT_EMAIL = "sjwebdevservices@gmail.com";
+  var endpoint = "https://formsubmit.co/ajax/" + CONTACT_EMAIL;
   /* --------------------------------------------------------- */
 
   var form = document.getElementById("contact-form");
@@ -26,8 +22,6 @@
 
   var alertBox = form.querySelector(".form__alert");
   var submitBtn = form.querySelector('button[type="submit"]');
-  var formReady = FORMSPREE_FORM_ID.indexOf("YOUR_") === -1 && FORMSPREE_FORM_ID.trim() !== "";
-  var endpoint = "https://formspree.io/f/" + FORMSPREE_FORM_ID;
 
   /* ---------- Validation rules ---------- */
   var rules = {
@@ -105,12 +99,13 @@
     submitBtn.classList.add("is-loading");
     submitBtn.setAttribute("disabled", "disabled");
 
-    // ---------- Formspree delivery ----------
-    if (formReady && window.fetch) {
+    // ---------- FormSubmit delivery ----------
+    if (window.fetch) {
       var data = new FormData(form);
-      // A readable subject line in the inbox; Formspree uses the "email"
-      // field as the reply-to automatically.
       data.append("_subject", "New website inquiry from " + (form.fullname.value || "your site"));
+      data.append("_replyto", form.email.value); // reply goes straight to the sender
+      data.append("_template", "table");          // clean, readable email layout
+      data.append("_captcha", "false");           // no extra captcha page
 
       fetch(endpoint, {
         method: "POST",
@@ -118,27 +113,29 @@
         headers: { "Accept": "application/json" }
       })
         .then(function (res) {
-          if (res.ok) {
+          return res.json()
+            .then(function (d) { return { ok: res.ok, data: d }; })
+            .catch(function () { return { ok: res.ok, data: null }; });
+        })
+        .then(function (r) {
+          var sent = r.ok && (!r.data || r.data.success === undefined || String(r.data.success) === "true");
+          if (sent) {
             form.reset();
             showAlert("success", "Thanks! Your message is on its way — we'll reply within one business day.");
           } else {
-            return res.json().then(function (d) {
-              var m = (d && d.errors && d.errors.length) ? d.errors[0].message : null;
-              showAlert("error", m || "Something went wrong sending your message. Please email sjwebdevservices@gmail.com directly.");
-            }).catch(function () {
-              showAlert("error", "Something went wrong sending your message. Please email sjwebdevservices@gmail.com directly.");
-            });
+            var m = r.data && r.data.message;
+            showAlert("error", m || "Something went wrong sending your message. Please email sjwebdevservices@gmail.com directly.");
           }
         })
         .catch(function (err) {
           showAlert("error", "Network error sending your message. Please email sjwebdevservices@gmail.com directly.");
-          if (window.console) console.error("Formspree error:", err);
+          if (window.console) console.error("FormSubmit error:", err);
         })
         .finally(resetButton);
     } else {
-      // ---------- Fallback: hand off to the visitor's email app ----------
-      // No relay configured yet, so compose a pre-filled email addressed to
-      // sjwebdevservices@gmail.com. The visitor just presses Send.
+      // ---------- Fallback (very old browsers without fetch) ----------
+      // Compose a pre-filled email addressed to sjwebdevservices@gmail.com
+      // in the visitor's email app; they just press Send.
       var lines = [
         "Name: " + form.fullname.value,
         "Email: " + form.email.value,
