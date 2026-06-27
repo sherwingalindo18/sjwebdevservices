@@ -136,13 +136,26 @@
         })
         .finally(resetButton);
     } else {
-      // ---------- Fallback (Formspree not yet configured) ----------
-      // Demo success so the UX is testable until the form ID is added.
-      window.setTimeout(function () {
-        resetButton();
-        form.reset();
-        showAlert("success", "Form validated successfully. Add your Formspree form ID in js/contact.js to start receiving inquiries by email.");
-      }, 900);
+      // ---------- Fallback: hand off to the visitor's email app ----------
+      // No relay configured yet, so compose a pre-filled email addressed to
+      // sjwebdevservices@gmail.com. The visitor just presses Send.
+      var lines = [
+        "Name: " + form.fullname.value,
+        "Email: " + form.email.value,
+        "Phone: " + (form.phone.value || "—"),
+        "Company: " + (form.company.value || "—"),
+        "Service: " + form.service.value,
+        "Budget: " + (form.budget.value || "Not specified"),
+        "",
+        form.message.value
+      ];
+      var subject = "New website inquiry from " + (form.fullname.value || "your site");
+      var mailto = "mailto:sjwebdevservices@gmail.com" +
+        "?subject=" + encodeURIComponent(subject) +
+        "&body=" + encodeURIComponent(lines.join("\n"));
+      resetButton();
+      window.location.href = mailto;
+      showAlert("success", "Opening your email app to send this to sjwebdevservices@gmail.com — just press Send to finish. If nothing opens, email us directly at sjwebdevservices@gmail.com.");
     }
   });
 })();
