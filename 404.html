@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>404 — Page Not Found | SJ Webdev Services</title>
+  <meta name="description" content="Sorry, the page you're looking for doesn't exist. Head back to the SJ Webdev Services homepage.">
+  <meta name="robots" content="noindex, follow">
+  <meta name="theme-color" content="#0E0F12">
+
+  <!-- Favicons -->
+  <link rel="icon" type="image/png" sizes="48x48" href="/images/favicon-48.png">
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32.png">
+  <link rel="apple-touch-icon" href="/images/favicon-180.png">
+
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+
+  <!-- Styles (root-absolute so this page works from any URL) -->
+  <link rel="stylesheet" href="/css/style.css">
+  <link rel="stylesheet" href="/css/animations.css">
+  <link rel="stylesheet" href="/css/responsive.css">
+</head>
+<body class="theme-dark-head">
+  <a class="skip-link" href="#main">Skip to content</a>
+
+  <header class="nav" id="nav">
+    <div class="nav__inner">
+      <a class="nav__logo" href="/" aria-label="SJ Webdev Services — home"><img class="logo-dark" src="/images/logo-dark.png" alt="SJ Webdev Services logo"><img class="logo-light" src="/images/logo-light.png" alt="SJ Webdev Services logo"></a>
+      <nav class="nav__menu" id="nav-menu" aria-label="Primary">
+        <a class="nav__link" href="/index.html">Home</a>
+        <a class="nav__link" href="/about-services.html">Services</a>
+        <a class="nav__link" href="/portfolio.html">Portfolio</a>
+        <a class="nav__link" href="/contact.html">Contact</a>
+        <span class="nav__cta"><a class="btn" href="/contact.html">Start a Project</a></span>
+      </nav>
+    </div>
+  </header>
+
+  <main id="main">
+    <section class="page-head bg-ink">
+      <div class="page-head__bg" aria-hidden="true"><div class="page-head__grid"></div><div class="page-head__slash"></div></div>
+      <div class="container" style="text-align:center; padding-block: clamp(4rem, 12vw, 9rem)">
+        <span class="eyebrow on-dark" style="margin-top:1rem">error 404</span>
+        <h1 class="h-xl">This page took a wrong turn.</h1>
+        <p class="lead" style="margin-inline:auto">The page you're looking for doesn't exist or may have moved. Let's get you back on track.</p>
+        <div class="hero__actions" style="justify-content:center; margin-top:2rem">
+          <a class="btn btn--lg" href="/index.html">Back to home <span class="arrow" aria-hidden="true">↗</span></a>
+          <a class="btn btn--ghost btn--lg" href="/portfolio.html">View portfolio</a>
+        </div>
+      </div>
+    </section>
+  </main>
+</body>
+</html>
