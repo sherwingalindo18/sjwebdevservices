@@ -1,3 +1,0 @@
-# Cloudflare Pages redirects
-# Send the www subdomain to the canonical apex domain.
-https://www.sjwebdevservices.com/* https://sjwebdevservices.com/:splat 301
