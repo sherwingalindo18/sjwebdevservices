@@ -1,237 +1,179 @@
 /* ============================================================
    SJ WEBDEV SERVICES — main.js
-   Core interactions shared across every page.
-   Vanilla JS only. No dependencies.
+   Vanilla JavaScript. No frameworks, no dependencies.
    ============================================================ */
 (function () {
   "use strict";
 
-  var prefersReduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-  var $  = function (s, c) { return (c || document).querySelector(s); };
-  var $$ = function (s, c) { return Array.prototype.slice.call((c || document).querySelectorAll(s)); };
+  /* ---------- Theme toggle (initial theme is set inline in <head> to avoid FOUC) ---------- */
+  var root = document.documentElement;
+  var toggle = document.querySelector(".theme-toggle");
 
-  /* ---------------------------------------------------------
-     1. LOADER + page-ready entrance
-  --------------------------------------------------------- */
-  function hideLoader() {
-    var loader = $("#loader");
-    document.body.classList.add("is-ready");
-    if (loader) {
-      loader.classList.add("is-done");
-      window.setTimeout(function () { loader.remove(); }, 700);
+  function setTheme(theme) {
+    root.setAttribute("data-theme", theme);
+    try { localStorage.setItem("sj-theme", theme); } catch (e) {}
+    var meta = document.querySelector('meta[name="theme-color"]');
+    if (meta) meta.setAttribute("content", theme === "light" ? "#F3F4F8" : "#0A0C11");
+    if (toggle) {
+      toggle.setAttribute("aria-label", theme === "light" ? "Switch to dark mode" : "Switch to light mode");
     }
   }
-  window.addEventListener("load", function () {
-    window.setTimeout(hideLoader, prefersReduced ? 0 : 450);
-  });
-  // safety fallback if load never fires
-  window.setTimeout(hideLoader, 2600);
 
-  /* ---------------------------------------------------------
-     2. NAVIGATION — scroll state, mobile drawer, active link
-  --------------------------------------------------------- */
-  var nav = $(".nav");
-  function onScrollNav() {
-    if (!nav) return;
-    nav.classList.toggle("is-scrolled", window.scrollY > 24);
-  }
-  onScrollNav();
-  window.addEventListener("scroll", onScrollNav, { passive: true });
-
-  var toggle = $(".nav__toggle");
-  var backdrop = $(".nav__backdrop");
-  function closeMenu() { document.body.classList.remove("menu-open"); if (toggle) toggle.setAttribute("aria-expanded", "false"); }
-  function openMenu()  { document.body.classList.add("menu-open");    if (toggle) toggle.setAttribute("aria-expanded", "true"); }
   if (toggle) {
     toggle.addEventListener("click", function () {
-      document.body.classList.contains("menu-open") ? closeMenu() : openMenu();
+      var next = root.getAttribute("data-theme") === "light" ? "dark" : "light";
+      setTheme(next);
+    });
+    setTheme(root.getAttribute("data-theme") || "dark");
+  }
+
+  /* ---------- Mobile navigation ---------- */
+  var navToggle = document.querySelector(".nav-toggle");
+  if (navToggle) {
+    navToggle.addEventListener("click", function () {
+      var open = document.body.classList.toggle("nav-open");
+      navToggle.setAttribute("aria-expanded", open ? "true" : "false");
+    });
+    document.querySelectorAll(".nav a").forEach(function (a) {
+      a.addEventListener("click", function () {
+        document.body.classList.remove("nav-open");
+        navToggle.setAttribute("aria-expanded", "false");
+      });
     });
   }
-  if (backdrop) backdrop.addEventListener("click", closeMenu);
-  $$(".nav__menu a").forEach(function (a) { a.addEventListener("click", closeMenu); });
-  document.addEventListener("keydown", function (e) { if (e.key === "Escape") closeMenu(); });
 
-  // active link by current filename
-  (function highlightActive() {
-    var path = location.pathname.split("/").pop() || "index.html";
-    $$(".nav__link").forEach(function (link) {
-      var href = link.getAttribute("href");
-      if (!href) return;
-      var target = href.split("/").pop();
-      if (target === path || (path === "index.html" && (target === "" || target === "index.html"))) {
-        link.classList.add("is-active");
-        link.setAttribute("aria-current", "page");
-      }
-    });
-  })();
-
-  /* ---------------------------------------------------------
-     3. SCROLL REVEAL (IntersectionObserver)
-  --------------------------------------------------------- */
-  var revealEls = $$("[data-reveal], [data-stagger], .reveal-text, .tl-item");
-  if ("IntersectionObserver" in window && !prefersReduced) {
-    var io = new IntersectionObserver(function (entries) {
+  /* ---------- Scroll reveals ---------- */
+  var reveals = document.querySelectorAll(".reveal");
+  if ("IntersectionObserver" in window && reveals.length) {
+    var ro = new IntersectionObserver(function (entries) {
       entries.forEach(function (entry) {
         if (entry.isIntersecting) {
-          entry.target.classList.add("is-revealed");
-          io.unobserve(entry.target);
+          entry.target.classList.add("in");
+          ro.unobserve(entry.target);
         }
       });
-    }, { threshold: 0, rootMargin: "0px 0px -10% 0px" });
-    revealEls.forEach(function (el) { io.observe(el); });
+    }, { threshold: 0.12 });
+    reveals.forEach(function (el) { ro.observe(el); });
   } else {
-    revealEls.forEach(function (el) { el.classList.add("is-revealed"); });
+    reveals.forEach(function (el) { el.classList.add("in"); });
   }
 
-  /* ---------------------------------------------------------
-     4. ANIMATED COUNTERS
-  --------------------------------------------------------- */
-  function animateCount(el) {
-    var target = parseFloat(el.getAttribute("data-count"));
-    var decimals = (el.getAttribute("data-count").split(".")[1] || "").length;
-    var duration = 1600;
-    var start = null;
-    el.classList.add("is-counting");
-    function step(ts) {
-      if (start === null) start = ts;
-      var p = Math.min((ts - start) / duration, 1);
-      var eased = 1 - Math.pow(1 - p, 3); // easeOutCubic
-      var val = target * eased;
-      el.firstChild.nodeValue = decimals ? val.toFixed(decimals) : Math.round(val).toLocaleString();
-      if (p < 1) requestAnimationFrame(step);
-      else { el.firstChild.nodeValue = decimals ? target.toFixed(decimals) : target.toLocaleString(); el.classList.remove("is-counting"); }
+  /* ---------- Animated counters ---------- */
+  var counters = document.querySelectorAll("[data-count]");
+  var reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+  function runCounter(el) {
+    var target = parseInt(el.getAttribute("data-count"), 10);
+    if (reduced || !target) { el.textContent = target; return; }
+    var dur = 1400, start = null;
+    function tick(ts) {
+      if (!start) start = ts;
+      var p = Math.min((ts - start) / dur, 1);
+      var eased = 1 - Math.pow(1 - p, 3);
+      el.textContent = Math.round(target * eased);
+      if (p < 1) requestAnimationFrame(tick);
     }
-    requestAnimationFrame(step);
+    requestAnimationFrame(tick);
   }
-  var counters = $$("[data-count]");
-  if (counters.length) {
-    if ("IntersectionObserver" in window && !prefersReduced) {
-      var cio = new IntersectionObserver(function (entries) {
-        entries.forEach(function (entry) {
-          if (entry.isIntersecting) { animateCount(entry.target); cio.unobserve(entry.target); }
+
+  if ("IntersectionObserver" in window && counters.length) {
+    var co = new IntersectionObserver(function (entries) {
+      entries.forEach(function (entry) {
+        if (entry.isIntersecting) {
+          runCounter(entry.target);
+          co.unobserve(entry.target);
+        }
+      });
+    }, { threshold: 0.4 });
+    counters.forEach(function (el) { co.observe(el); });
+  } else {
+    counters.forEach(function (el) { el.textContent = el.getAttribute("data-count"); });
+  }
+
+  /* ---------- Portfolio filters ---------- */
+  var filterBtns = document.querySelectorAll(".filter-btn");
+  var works = document.querySelectorAll(".work");
+  if (filterBtns.length && works.length) {
+    filterBtns.forEach(function (btn) {
+      btn.addEventListener("click", function () {
+        filterBtns.forEach(function (b) {
+          b.classList.remove("is-active");
+          b.setAttribute("aria-pressed", "false");
         });
-      }, { threshold: 0.6 });
-      counters.forEach(function (c) { cio.observe(c); });
-    } else {
-      counters.forEach(function (c) {
-        var t = c.getAttribute("data-count");
-        c.firstChild.nodeValue = (t.indexOf(".") > -1 ? parseFloat(t).toFixed(1) : parseInt(t, 10).toLocaleString());
+        btn.classList.add("is-active");
+        btn.setAttribute("aria-pressed", "true");
+        var f = btn.getAttribute("data-filter");
+        works.forEach(function (w) {
+          var show = f === "all" || w.getAttribute("data-cat") === f;
+          w.classList.toggle("is-hidden", !show);
+        });
       });
-    }
-  }
-
-  /* ---------------------------------------------------------
-     5. TESTIMONIAL SLIDER
-  --------------------------------------------------------- */
-  (function testimonialSlider() {
-    var slider = $(".tslider");
-    if (!slider) return;
-    var rail   = $(".tslider__rail", slider);
-    var slides = $$(".tslide", slider);
-    var prev   = $(".tslider__arrow--prev", slider);
-    var next   = $(".tslider__arrow--next", slider);
-    var dotsWrap = $(".tslider__dots", slider);
-    var index = 0, timer = null;
-
-    slides.forEach(function (_, i) {
-      var dot = document.createElement("button");
-      dot.className = "tdot" + (i === 0 ? " is-active" : "");
-      dot.setAttribute("aria-label", "Go to testimonial " + (i + 1));
-      dot.addEventListener("click", function () { go(i); restart(); });
-      dotsWrap.appendChild(dot);
-    });
-    var dots = $$(".tdot", dotsWrap);
-
-    function go(i) {
-      index = (i + slides.length) % slides.length;
-      rail.style.transform = "translateX(-" + index * 100 + "%)";
-      dots.forEach(function (d, di) { d.classList.toggle("is-active", di === index); });
-      slides.forEach(function (s, si) { s.setAttribute("aria-hidden", si !== index); });
-    }
-    function nextSlide() { go(index + 1); }
-    function restart() { if (timer) clearInterval(timer); if (!prefersReduced) timer = setInterval(nextSlide, 6000); }
-
-    if (prev) prev.addEventListener("click", function () { go(index - 1); restart(); });
-    if (next) next.addEventListener("click", function () { go(index + 1); restart(); });
-
-    // swipe
-    var sx = 0;
-    rail.addEventListener("touchstart", function (e) { sx = e.touches[0].clientX; }, { passive: true });
-    rail.addEventListener("touchend", function (e) {
-      var dx = e.changedTouches[0].clientX - sx;
-      if (Math.abs(dx) > 45) { dx < 0 ? go(index + 1) : go(index - 1); restart(); }
-    }, { passive: true });
-
-    slider.addEventListener("mouseenter", function () { if (timer) clearInterval(timer); });
-    slider.addEventListener("mouseleave", restart);
-    go(0); restart();
-  })();
-
-  /* ---------------------------------------------------------
-     6. FAQ ACCORDION
-  --------------------------------------------------------- */
-  $$(".faq__item").forEach(function (item) {
-    var q = $(".faq__q", item);
-    var a = $(".faq__a", item);
-    if (!q || !a) return;
-    q.addEventListener("click", function () {
-      var open = item.classList.toggle("is-open");
-      q.setAttribute("aria-expanded", open);
-      a.style.maxHeight = open ? a.scrollHeight + "px" : "0px";
-    });
-  });
-
-  /* ---------------------------------------------------------
-     7. BACK TO TOP
-  --------------------------------------------------------- */
-  var toTop = $(".to-top");
-  if (toTop) {
-    window.addEventListener("scroll", function () {
-      toTop.classList.toggle("show", window.scrollY > 520);
-    }, { passive: true });
-    toTop.addEventListener("click", function () {
-      window.scrollTo({ top: 0, behavior: prefersReduced ? "auto" : "smooth" });
     });
   }
 
-  /* ---------------------------------------------------------
-     8. SMOOTH ANCHOR SCROLL (offset for sticky nav)
-  --------------------------------------------------------- */
-  $$('a[href^="#"]').forEach(function (a) {
-    a.addEventListener("click", function (e) {
-      var id = a.getAttribute("href");
-      if (id === "#" || id.length < 2) return;
-      var el = document.getElementById(id.slice(1));
-      if (!el) return;
+  /* ---------- Contact form (direct submit via FormSubmit — no email app) ---------- */
+  var form = document.getElementById("contact-form");
+  if (form) {
+    var ENDPOINT = "https://formsubmit.co/ajax/sjwebdevservices@gmail.com";
+    form.addEventListener("submit", function (e) {
       e.preventDefault();
-      var y = el.getBoundingClientRect().top + window.scrollY - 80;
-      window.scrollTo({ top: y, behavior: prefersReduced ? "auto" : "smooth" });
+      var status = document.getElementById("form-status");
+      var submitBtn = form.querySelector('button[type="submit"]');
+      var get = function (id) { return (document.getElementById(id) || {}).value || ""; };
+
+      var name = get("cf-name").trim();
+      var email = get("cf-email").trim();
+      var message = get("cf-message").trim();
+      if (!name || !email || !message) {
+        if (status) status.textContent = "/ please fill in your name, email and message.";
+        return;
+      }
+
+      /* honeypot — silently drop bot submissions */
+      var honey = document.getElementById("cf-honey");
+      if (honey && honey.value) return;
+
+      var company = get("cf-company").trim();
+      var payload = {
+        name: name,
+        email: email,
+        phone: get("cf-phone").trim() || "—",
+        company: company || "—",
+        service: get("cf-service") || "—",
+        budget: get("cf-budget") || "—",
+        message: message,
+        _subject: "Project enquiry — " + name + (company ? " (" + company + ")" : ""),
+        _bcc: "sherwingalindo18@gmail.com",
+        _template: "table",
+        _captcha: "false"
+      };
+
+      if (status) status.textContent = "/ sending your message…";
+      if (submitBtn) submitBtn.disabled = true;
+
+      fetch(ENDPOINT, {
+        method: "POST",
+        headers: { "Content-Type": "application/json", "Accept": "application/json" },
+        body: JSON.stringify(payload)
+      })
+        .then(function (res) {
+          if (!res.ok) throw new Error("HTTP " + res.status);
+          return res.json();
+        })
+        .then(function () {
+          if (status) status.textContent = "/ message sent — we'll reply within one business day. thank you!";
+          form.reset();
+        })
+        .catch(function () {
+          if (status) status.textContent = "/ couldn't send right now — please email us directly at sjwebdevservices@gmail.com";
+        })
+        .finally(function () {
+          if (submitBtn) submitBtn.disabled = false;
+        });
     });
-  });
+  }
 
-  /* ---------------------------------------------------------
-     9. PAGE TRANSITION (wipe on internal navigation)
-  --------------------------------------------------------- */
-  (function pageTransitions() {
-    if (prefersReduced) return;
-    var internal = $$('a[href$=".html"]');
-    internal.forEach(function (a) {
-      a.addEventListener("click", function (e) {
-        var url = a.getAttribute("href");
-        // ignore new tabs / external / same page
-        if (a.target === "_blank" || a.hasAttribute("download") || e.metaKey || e.ctrlKey) return;
-        var current = location.pathname.split("/").pop() || "index.html";
-        if (url.split("/").pop() === current) return;
-        e.preventDefault();
-        document.body.classList.add("page-leaving");
-        window.setTimeout(function () { window.location.href = url; }, 520);
-      });
-    });
-  })();
-
-  /* ---------------------------------------------------------
-     10. DYNAMIC FOOTER YEAR
-  --------------------------------------------------------- */
-  $$("[data-year]").forEach(function (el) { el.textContent = new Date().getFullYear(); });
-
+  /* ---------- Footer year ---------- */
+  var yearEl = document.getElementById("year");
+  if (yearEl) yearEl.textContent = new Date().getFullYear();
 })();

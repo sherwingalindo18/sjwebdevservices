@@ -1,6 +1,4 @@
-# robots.txt — SJ Webdev Services
 User-agent: *
 Allow: /
 
-# Sitemap location
 Sitemap: https://sjwebdevservices.com/sitemap.xml

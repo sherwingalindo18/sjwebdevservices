@@ -1,52 +1,62 @@
-# SJ Webdev Services — Website
+# SJ Webdev Services — Website (v2 redesign)
 
-A production-ready, fully responsive, multi-page static website built with **HTML5, CSS3 and vanilla JavaScript** (no frameworks, no build step). Just upload the files to any host and it works.
+Hand-coded static site. No frameworks, no build step, no dependencies.
+Stack: HTML5 · CSS3 · vanilla JavaScript · Space Grotesk + JetBrains Mono (Google Fonts).
 
-## Folder structure
+## Files
 
 ```
-/
-├── index.html              Home
-├── about-services.html     Services + process + FAQ
-├── portfolio.html          Filterable project gallery + lightbox
-├── contact.html            Contact form (EmailJS)
-├── robots.txt              Search-engine crawl rules
-├── sitemap.xml             Page index for search engines
-│
-├── css/
-│   ├── style.css           Design system, layout, components
-│   ├── animations.css      Scroll reveals & entrance motion
-│   └── responsive.css      Tablet / mobile breakpoints
-│
-├── js/
-│   ├── main.js             Nav, loader, reveals, counters, slider, back-to-top
-│   ├── portfolio.js        Category filtering + lightbox
-│   └── contact.js          Form validation + EmailJS delivery
-│
-├── images/
-│   ├── logo-dark.png       Logo for light backgrounds (header)
-│   ├── logo-light.png      Logo for dark backgrounds (footer)
-│   ├── favicon-*.png       Favicons / app icons
-│   └── portfolio/          12 project thumbnails (SVG — easy to replace)
-│
-└── assets/
-    └── og-image.svg        Social-share preview image
+index.html        Home
+about.html        About (new — split out from the old about-services.html)
+services.html     Services (8 services, process, FAQ)
+portfolio.html    Portfolio (30 projects, live filters)
+contact.html      Contact (cards + enquiry form)
+404.html          Custom not-found page
+css/style.css     Full design system (dark + light themes)
+js/main.js        Theme toggle, mobile nav, reveals, counters, filters, form
+robots.txt        Allows crawling, points to sitemap
+sitemap.xml       All 5 pages, canonical domain
+.htaccess         301 redirect old about-services.html → services.html,
+                  404 handler, caching, gzip
 ```
 
-## SEO — what's already built in
+## Deploying to Bluehost (sjwebdevservices.com)
 
-Every page includes: a unique `<title>` and meta description, keywords, `robots`, a canonical URL, Open Graph + Twitter Card tags, and JSON-LD structured data (Organization, Breadcrumbs, Service catalog, FAQ, ContactPage). The site also ships with `robots.txt` and `sitemap.xml`, semantic landmarks, one `<h1>` per page, descriptive `alt` text, and accessible focus states.
+1. Open cPanel → File Manager → `public_html`.
+2. Upload the contents of this folder (not the folder itself) into `public_html`.
+   Make sure "Show hidden files" is on so `.htaccess` uploads too.
+3. Keep your existing `/assets/og-image.png` on the server — the social
+   preview tags point to it. (If it's missing, upload any 1200×630 PNG there.)
+4. Done. No database, no PHP, nothing to configure.
 
-**Before going live**, do a find-and-replace of `https://www.sjwebdevservices.com` if your final domain differs, then submit `sitemap.xml` in Google Search Console.
+## Theme toggle
 
-## Make the contact form send email (EmailJS)
+- Sun/moon button in the header switches dark ↔ light.
+- The visitor's choice is saved in `localStorage` (`sj-theme`).
+- First visit follows the device's `prefers-color-scheme`.
+- An inline script in `<head>` applies the theme before paint (no flash).
 
-The form is wired to deliver inquiries to **sjwebdevservices@gmail.com** via EmailJS (free). Full step-by-step instructions are in the comment block at the bottom of `contact.html`. In short: create an EmailJS account, add a Gmail service + template, then paste your three IDs into the top of `js/contact.js`. Until then the form runs in demo mode (validates and shows a success message, no email sent).
+## Contact form
 
-## Replace portfolio projects
+The form is static-host friendly: on submit it opens the visitor's email app
+with a fully pre-filled message to sjwebdevservices@gmail.com (name, phone,
+company, service, budget, message). If you later want submissions delivered
+without the email app step, swap the form to a service like FormSubmit or
+Formspree — the markup is ready; just add an `action` and `method="POST"`.
 
-Each project is one `<article class="p-card">` in `portfolio.html` (and the featured six in `index.html`). Edit the `data-*` attributes (title, category, description, url, type, stack) and swap the thumbnail in `images/portfolio/`. Keep the `data-category` value matching one of the filter buttons: `business`, `restaurant`, `ecommerce`, `church`, `booking`, `custom`.
+## Portfolio thumbnails
 
-## Replace the logo
+Thumbnails use the same WordPress mShots screenshot service as the current
+site, so they always show the live client sites and need no image files.
+First-ever load of a thumbnail can take a few seconds while mShots renders it.
 
-Drop your files in as `images/logo-dark.png` (used on light backgrounds) and `images/logo-light.png` (used on dark backgrounds). Dimensions are flexible — height is controlled in CSS.
+## SEO checklist (already done)
+
+- Unique title + meta description per page
+- Canonical URLs on sjwebdevservices.com
+- Open Graph + Twitter cards on every page
+- JSON-LD: ProfessionalService, WebSite, AboutPage, FAQPage,
+  ItemList (services), CollectionPage, ContactPage, BreadcrumbList
+- Semantic landmarks, one h1 per page, alt text on all images
+- sitemap.xml + robots.txt (submit the sitemap in Google Search Console)
+- 301 redirect preserves link equity from the old about-services.html URL
